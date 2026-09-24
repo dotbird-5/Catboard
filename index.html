@@ -1,11 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>캣보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캣보드 웹 테스트</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #50e3c2;
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .upload-section {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: inline-block;
+            text-align: left;
+        }
+
+        .upload-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        input[type="file"] {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        /* 캐릭터 표시 영역 */
+        #display-area {
+            margin: 20px auto;
+            width: 250px;
+            height: 250px;
+            border: 2px dashed #50e3c2;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #000000;
+        }
+
+        #pet-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* 테스트용 입력창 */
+        #test-input {
+            width: 80%;
+            max-width: 300px;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #50e3c2;
+            border-radius: 8px;
+            background-color: #1e1e1e;
+            color: #fff;
+            outline: none;
+            text-align: center;
+        }
+
+        #test-input::placeholder {
+            color: #888;
+        }
+    </style>
 </head>
-<body style="background-color: #000; color: #50e3c2; text-align: center; padding-top: 50px;">
-    <h1>🐾 캣보드에 오신 것을 환영합니다!</h1>
-    <p>키보드를 치면 고양이가 움직이는 웹사이트를 만드는 중입니다.</p>
+<body>
+
+    <h1>🐾 캣보드 키보드펫</h1>
+    <p>이미지를 업로드하고 아래 입력창에서 키보드를 쳐보세요!</p>
+
+    <!-- 이미지 업로드 영역 -->
+    <div class="upload-section">
+        <div class="upload-group">
+            <label>1. 기본 이미지 (대기 상태)</label>
+            <input type="file" id="idle-upload" accept="image/*">
+        </div>
+        <div class="upload-group">
+            <label>2. 터치했을 때 이미지 (여러 개 선택 가능)</label>
+            <input type="file" id="action-upload" accept="image/*" multiple>
+        </div>
+    </div>
+
+    <!-- 캐릭터가 보일 화면 -->
+    <div id="display-area">
+        <img id="pet-image" src="" alt="이미지를 업로드해주세요" style="display: none;">
+    </div>
+
+    <!-- 키보드 입력 테스트용 Input -->
+    <input type="text" id="test-input" placeholder="여기를 터치해 자판을 치세요!">
+
+    <script>
+        const idleUpload = document.getElementById('idle-upload');
+        const actionUpload = document.getElementById('action-upload');
+        const petImage = document.getElementById('pet-image');
+        const testInput = document.getElementById('test-input');
+
+        let idleImageSrc = '';
+        let actionImagesSrc = [];
+        let isTyping = false;
+
+        // 1. 기본 이미지 업로드 처리
+        idleUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                idleImageSrc = URL.createObjectURL(file);
+                petImage.src = idleImageSrc;
+                petImage.style.display = 'block';
+            }
+        });
+
+        // 2. 터치했을 때 이미지들 업로드 처리
+        actionUpload.addEventListener('change', (e) => {
+            const files = e.target.files;
+            actionImagesSrc = [];
+            for (let i = 0; i < files.length; i++) {
+                actionImagesSrc.push(URL.createObjectURL(files[i]));
+            }
+        });
+
+        // 3. 키보드를 눌렀을 때 (keydown)
+        testInput.addEventListener('keydown', () => {
+            if (actionImagesSrc.length > 0) {
+                // 업로드된 터치 이미지 중 하나를 무작위로 선택
+                const randomIndex = Math.floor(Math.random() * actionImagesSrc.length);
+                petImage.src = actionImagesSrc[randomIndex];
+            }
+        });
+
+        // 4. 키보드에서 손을 뗐을 때 (keyup) -> 기본 이미지로 복귀
+        testInput.addEventListener('keyup', () => {
+            if (idleImageSrc) {
+                // 약간의 여운을 위해 0.15초 뒤에 기본 이미지로 돌아감
+                setTimeout(() => {
+                    petImage.src = idleImageSrc;
+                }, 150);
+            }
+        });
+    </script>
 </body>
 </html>
